@@ -76,6 +76,7 @@ exports.delete = function(req, res) {
 /* Retreive all the directory listings, sorted alphabetically by listing code */
 exports.list = function(req, res) {
   /* Add your code */
+  res.send('Test');
 };
 
 /* 
