@@ -28,6 +28,7 @@ exports.create = function(req, res) {
   var listing = new Listing(req.body);
 
   /* save the coordinates (located in req.results if there is an address property) */
+  console.log('&&&&', req.results);
   if(req.results) {
     listing.coordinates = {
       latitude: req.results.lat, 
@@ -36,13 +37,11 @@ exports.create = function(req, res) {
   }
  
   /* Then save the listing */
-  listing.save(function(err) {
+  listing.save(function(err, doc) {
     if(err) {
-      console.log(err);
       res.status(400).send(err);
     } else {
       res.json(listing);
-      console.log(listing)
     }
   });
 };
@@ -50,7 +49,13 @@ exports.create = function(req, res) {
 /* Show the current listing */
 exports.read = function(req, res) {
   /* send back the listing as json from the request */
-  res.json(req.listing);
+  Listing.findById(req.params.listingId).exec(function(err, listing) {
+    if (err)
+      console.log(err)
+    else {
+      res.status(200).send(listing);
+    }
+  });
 };
 
 /* Update a listing - note the order in which this function is called by the router*/
@@ -60,23 +65,39 @@ exports.update = function(req, res) {
   /* Replace the listings's properties with the new properties found in req.body */
  
   /*save the coordinates (located in req.results if there is an address property) */
- 
-  /* Save the listing */
 
+  /* Save the listing */
+  listing.code = req.body.code;
+  listing.name = req.body.name;
+  listing.address = req.body.address;
+  listing.coordinates = req.results;
+  Listing.updateOne(listing, function(err, raw) {
+    res.send(listing);
+  });
 };
 
 /* Delete a listing */
 exports.delete = function(req, res) {
   var listing = req.listing;
-
   /* Add your code to remove the listins */
-
+  Listing.deleteOne(listing, function(err, listing) {
+    if (err) {
+      console.log(err);
+      console.log('Found nothing to delete.');
+    }
+    else {
+      res.send(listing);
+    }
+  });
 };
 
 /* Retreive all the directory listings, sorted alphabetically by listing code */
 exports.list = function(req, res) {
   /* Add your code */
-  res.send('Test');
+  Listing.find().exec(function (err, docs) {
+    if (!err)
+      res.send(docs);
+  });
 };
 
 /* 
